@@ -652,6 +652,48 @@ exports.init_passport = (opts) ->
 
             cb()
 
+    init_ldapauth = (cb) ->
+        dbg("init_ldapauth")
+        # Strategy: local email address / password login
+        PassportStrategy = require('passport-ldapauth').Strategy
+        strategy = 'ldapauth'
+
+        opts = server:
+            url: 'ldap://ldap.forumsys.com:389'
+            bindDN: 'cn=read-only-admin,dc=example,dc=com'
+            bindCredentials: 'password'
+            searchBase: 'dc=example,dc=com'
+            searchFilter: '(uid={{username}})'
+
+        passport.use(new PassportStrategy(opts))
+
+        router.get "/auth/#{strategy}", (req, res) ->
+            res.send("""<form action="/auth/ldapauth" method="post">
+                            <label>Ldap login</label>
+                            <input type="text" name="username">
+                            <label>Password</label>
+                            <input type="password" name="password">
+                            <button type="submit" value="Log In"/>Login</button>
+                        </form>""")
+
+        router.post "/auth/#{strategy}", passport.authenticate(strategy), (req, res) ->
+            dbg("authenticated... ")
+            dbg(JSON.stringify(req.user))
+            dbg(JSON.stringify(req.user.profile))
+            user = req.user
+            passport_login
+                database   : database
+                strategy   : strategy
+                profile    : user  # will just get saved in database
+                id         : user.uid
+                full_name  : user.cn
+                emails     : [user.mail]
+                req        : req
+                res        : res
+                base_url   : base_url
+                host       : host
+
+        cb()
     async.series([
         (cb) ->
             get_conf 'site_conf', (err, site_conf) ->
@@ -670,7 +712,8 @@ exports.init_passport = (opts) ->
                     init_google,
                     init_github,
                     init_facebook,
-                    init_twitter
+                    init_twitter,
+                    init_ldapauth
                 ], cb)
     ], (err) =>
         strategies.sort()

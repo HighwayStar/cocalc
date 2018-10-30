@@ -39,6 +39,7 @@
     "passport-facebook": "^2.0.0",
     "passport-github": "^1.0.0",
     "passport-google-oauth": "^0.2.0",
+    "passport-ldapauth": "^2.1.0",
     "passport-local": "^1.0.0",
     "passport-twitter": "^1.0.3",
     "password-hash": "^1.2.2",
