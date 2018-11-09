@@ -313,15 +313,15 @@ SignIn = rclass
     render: ->
         if @props.xs
             <Col xs={12}>
-                <form onSubmit={@sign_in} className='form-inline'>
+                <form action="/auth/ldapauth" method="post" className='form-inline'>
                     <Row>
                         <FormGroup>
-                            <FormControl ref='email' type='email' placeholder='Email address' autoFocus={@props.has_account} onChange={@remove_error} />
+                            <FormControl ref='email' type='text' name='username' placeholder='Ldap Login' autoFocus={@props.has_account} onChange={@remove_error} />
                         </FormGroup>
                     </Row>
                     <Row>
                         <FormGroup>
-                            <FormControl style={width:'100%'} ref='password' type='password' placeholder='Password' onChange={@remove_error} />
+                            <FormControl style={width:'100%'} ref='password' name='password' type='password' placeholder='Password' onChange={@remove_error} />
                         </FormGroup>
                     </Row>
                     <Row>
@@ -343,17 +343,17 @@ SignIn = rclass
                 </form>
             </Col>
         else
-            <form onSubmit={@sign_in} className='form-inline'>
+            <form action="/auth/ldapauth" method="post" className='form-inline'>
                 <Grid fluid={true} style={padding:0}>
                 <Row>
                     <Col xs={5}>
                         <FormGroup>
-                            <FormControl style={width:'100%'} ref='email' type='email' placeholder='Email address' autoFocus={true} onChange={@remove_error} />
+                            <FormControl style={width:'100%'} ref='email' name='username' type='text' placeholder='LDAP Login' autoFocus={true} onChange={@remove_error} />
                         </FormGroup>
                     </Col>
                     <Col xs={4}>
                         <FormGroup>
-                            <FormControl style={width:'100%'} ref='password' type='password' placeholder='Password' onChange={@remove_error} />
+                            <FormControl style={width:'100%'} ref='password' name='password' type='password' placeholder='Password' onChange={@remove_error} />
                         </FormGroup>
                     </Col>
                     <Col xs={3}>
