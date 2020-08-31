@@ -61,7 +61,7 @@ import {
 const safeJsonStringify = require("safe-json-stringify");
 
 // primary strategies -- all other ones are "extra"
-const PRIMARY_STRATEGIES = ["email", "site_conf", ...PRIMARY_SSO];
+const PRIMARY_STRATEGIES = ["email", "site_conf", "ldapauth", ...PRIMARY_SSO];
 
 // root for authentication related endpoints -- will be prefixed with the base_url
 const AUTH_BASE = "/auth";
@@ -276,6 +276,44 @@ const TwitterStrategyConf: StrategyConf = {
     includeEmail: true,
   },
 };
+
+
+const LdapAuthWrapper = (
+) => {
+  // cast to any, because otherwies TypeScript complains:
+  // Only a void function can be called with the 'new' keyword.
+    var getLDAPConfiguration = function(req, callback) {
+      // Fetching things from database or whatever
+      process.nextTick(function() {
+        const opts = {
+          server: {
+            url: 'ldap://ldap.forumsys.com:389',
+            bindDN: 'uid=' + req.query.username + ',dc=example,dc=com',
+            bindCredentials: req.query.password,
+            searchBase: 'dc=example,dc=com',
+            searchFilter: '(uid={{username}})'
+          }
+        };
+        const dbg = LOG.extend("LdapAuthWrapper")
+        dbg(req);
+        callback(null, opts);
+      });
+    };
+
+  const LdapAuthStrat = require("passport-ldapauth").Strategy as any;
+  return new LdapAuthStrat( getLDAPConfiguration);
+};
+
+const LdapAuthStrategyConf: StrategyConf = {
+  strategy: "ldapauth",
+  PassportStrategyConstructor: LdapAuthWrapper,
+  login_info: {
+    id: (profile) => profile.uid,
+    full_name: (profile) => profile.cn,
+    emails: (profile) => profile.email,
+  },
+};
+
 
 // generalized OpenID (OAuth2) profile parser for the "userinfo" endpoint
 // the returned structure matches passport.js's conventions
@@ -532,6 +570,7 @@ class PassportManager {
       this.init_strategy(GithubStrategyConf),
       this.init_strategy(FacebookStrategyConf),
       this.init_strategy(TwitterStrategyConf),
+      this.init_strategy(LdapAuthStrategyConf),
       this.init_extra_strategies(),
     ]);
   }
@@ -736,7 +775,7 @@ class PassportManager {
           throw Error("req.user == null -- that shouldn't happen");
         }
         dbg2(`${strategy}/return user = ${safeJsonStringify(req.user)}`);
-        const profile = (req.user["profile"] as any) as passport.Profile;
+        const profile = (req.user as any) as passport.Profile;
         dbg2(`${strategy}/return profile = ${safeJsonStringify(profile)}`);
         const login_opts = {
           strategy,

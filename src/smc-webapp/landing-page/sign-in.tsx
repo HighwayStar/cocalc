@@ -7,7 +7,6 @@ import { React, useActions, useEffect, useState } from "../app-framework";
 import { List } from "immutable";
 import { ErrorDisplay } from "../r_misc/error-display";
 import { Markdown } from "../r_misc";
-import { Passports } from "../passports";
 import { PassportStrategy } from "../account/passport-types";
 import { Col, Row, Button } from "../antd-bootstrap";
 import { Input } from "antd";
@@ -41,11 +40,35 @@ export const SignIn: React.FC<Props> = (props) => {
   }
 
   function sign_in(): void {
-    actions.sign_in(email, password);
-  }
-
-  function display_forgot_password(): void {
-    actions.setState({ show_forgot_password: true });
+    fetch(window.app_base_url + "/auth/ldapauth/return?"+ new URLSearchParams({
+        'username' : email,
+        'password' : password,
+    }), {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/x-www-form-urlencoded",
+      },
+      redirect: "follow",
+    })
+    .then(response => {
+        if (response.status === 500) {
+            // do what you need to do here
+            actions.setState({ sign_in_error: "Auth server error. LDAP down?" });
+        }
+        if (response.status === 401) {
+            // do what you need to do here
+            actions.setState({ sign_in_error: "Unautorized. Check you login and pasword." });
+        }
+        // HTTP 301 response
+        // HOW CAN I FOLLOW THE HTTP REDIRECT RESPONSE?
+        if (response.redirected) {
+            window.location.href = response.url;
+        }
+    })
+    .catch(function(err) {
+        console.info(err );
+    });
+    //actions.sign_in(email, password);
   }
 
   function render_error(): JSX.Element | undefined {
@@ -61,17 +84,6 @@ export const SignIn: React.FC<Props> = (props) => {
     );
   }
 
-  function render_passports(): JSX.Element {
-    return (
-      <div>
-        <Passports
-          strategies={props.strategies}
-          get_api_key={props.get_api_key}
-          no_heading={true}
-        />
-      </div>
-    );
-  }
 
   function remove_error(): void {
     if (props.sign_in_error) {
@@ -95,9 +107,9 @@ export const SignIn: React.FC<Props> = (props) => {
             <Input
               style={{ width: "100%", marginBottom: "5px" }}
               value={email}
-              type="email"
+              type="text"
               name="email"
-              placeholder="Email address"
+              placeholder="LDAP account"
               cocalc-test={"sign-in-email"}
               autoFocus={true}
               onChange={(e) => {
@@ -146,20 +158,17 @@ export const SignIn: React.FC<Props> = (props) => {
           <Col xs={7} xsOffset={5} style={{ paddingLeft: 15 }}>
             <div style={{ marginTop: "1ex" }}>
               <a
-                onClick={display_forgot_password}
                 style={{
                   color: props.color,
                   cursor: "pointer",
                   fontSize: forgot_font_size(),
                 }}
+                href="https://example.com/account/lost_password"
               >
                 Forgot Password?
               </a>
             </div>
           </Col>
-        </Row>
-        <Row>
-          <Col xs={12}>{render_passports()}</Col>
         </Row>
         <Row
           className={"form-inline pull-right"}
