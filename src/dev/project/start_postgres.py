@@ -12,7 +12,7 @@ path = os.path.split(os.path.realpath(__file__))[0]; os.chdir(path); sys.path.in
 PG_DATA = os.path.join(path, "postgres_data")
 
 if not os.path.exists(PG_DATA):
-    util.cmd("pg_ctl init -D '%s'"%PG_DATA)
+    util.cmd("/usr/lib/postgresql/10/bin/pg_ctl init -D '%s'"%PG_DATA)
 
     # Lock down authentication so it is ONLY via unix socket
     open(os.path.join(PG_DATA,'pg_hba.conf'), 'w').write(
@@ -47,11 +47,11 @@ export PGHOST='%s'
     util.cmd('chmod +x postgres-env')
 
     # Start database running in background as daemon
-    util.cmd("postgres -D '%s' >%s/postgres.log 2>&1 &"%(PG_DATA, PG_DATA))
+    util.cmd("/usr/lib/postgresql/10/bin/postgres -D '%s' >%s/postgres.log 2>&1 &"%(PG_DATA, PG_DATA))
     time.sleep(5)
 
     # Create the smc user with no password (not needed since we are using local file permissions)
-    util.cmd("unset PGUSER; unset PGHOST; createuser -h '%s' -sE smc"%socket_dir)
+    util.cmd("unset PGUSER; unset PGHOST; /usr/lib/postgresql/10/bin/createuser -h '%s' -sE smc"%socket_dir)
 
     # Stop database daemon
     util.cmd("kill %s"%(open(os.path.join(PG_DATA, 'postmaster.pid')).read().split()[0]))
@@ -59,4 +59,4 @@ export PGHOST='%s'
     time.sleep(3)
 
 
-util.cmd("postgres -D '%s'"%PG_DATA)
+util.cmd("/usr/lib/postgresql/10/bin/postgres -D '%s'"%PG_DATA)
