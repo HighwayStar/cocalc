@@ -21,9 +21,9 @@ import {
 import { Row, Col, Alert } from "../antd-bootstrap";
 import { UNIT, COLORS } from "../r_misc";
 import { SiteDescription, Footer } from "../customize";
-import { SignUp } from "./sign-up";
+
 import { SignIn } from "./sign-in";
-import { RunAnonymously } from "./run-anonymously";
+
 import { ForgotPassword } from "./forgot-password";
 import { ResetPassword } from "./reset-password";
 import { Connecting } from "./connecting";
@@ -388,30 +388,12 @@ class LandingPage extends Component<Props & reduxProps, State> {
             textAlign: "center",
           }}
         >
-          <Col sm={12}>
-            <b>Create a new account</b> below on the left or <b>sign in</b> with
-            an existing account above.
-          </Col>
         </Row>
         <Row style={{ minHeight: "60vh" }}>
           <Col md={6}>
-            <SignUp
-              sign_up_error={this.props.sign_up_error}
-              strategies={this.props.strategies}
-              get_api_key={this.props.get_api_key}
-              token={this.props.token}
-              has_remember_me={this.props.has_remember_me}
-              signing_up={this.props.signing_up}
-              has_account={this.props.has_account}
-              help_email={this.props.help_email}
-              terms_of_service={this.props.terms_of_service}
-              terms_of_service_url={this.props.terms_of_service_url}
-              email_signup={this.props.email_signup}
-            />
           </Col>
           <Col md={6}>
             <div style={{ color: COLORS.GRAY, marginTop: "5px" }}>
-              <RunAnonymously show_terms={this.state.show_terms} />
               <br />
               {this.render_support()}
               <br />
